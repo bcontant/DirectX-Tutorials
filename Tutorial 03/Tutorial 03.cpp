@@ -18,6 +18,7 @@ ID3D11VertexShader* g_pVertexShader = NULL;
 ID3D11PixelShader* g_pPixelShader = NULL;
 
 ID3D11Buffer* g_pVertexBuffer = NULL;
+ID3D11InputLayout* g_pInputLayout = NULL;
 
 struct Vertex
 {
@@ -90,17 +91,15 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 	swapChainDesc.BufferDesc.Width = windowWidth;
 	swapChainDesc.BufferDesc.Height = windowHeight;
-	swapChainDesc.BufferDesc.Width = 320;
-	swapChainDesc.BufferDesc.Height = 200;
 	swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
 	swapChainDesc.BufferDesc.RefreshRate.Denominator = 0;
 	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	swapChainDesc.SampleDesc.Count = 2;
+	swapChainDesc.SampleDesc.Count = 1;
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDesc.BufferCount = 1;
+	swapChainDesc.BufferCount = 2;
 	swapChainDesc.OutputWindow = hwnd;
 	swapChainDesc.Windowed = TRUE;
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
 
 	hr = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, D3D11_CREATE_DEVICE_DEBUG, NULL, 0, D3D11_SDK_VERSION, &swapChainDesc, &g_pSwapChain, &g_pD3D11Device, NULL, &g_pD3D11DeviceContext);
 
@@ -128,6 +127,33 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	hr = g_pD3D11Device->CreateBuffer(&vertexBufferDesc, &vertexBufferInitData, &g_pVertexBuffer);
 
+	D3D11_INPUT_ELEMENT_DESC inputElementDescs[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+
+	hr = g_pD3D11Device->CreateInputLayout(inputElementDescs, 1, g_VertexShader, sizeof(g_VertexShader), &g_pInputLayout);
+
+	g_pD3D11DeviceContext->OMSetRenderTargets(1, &g_pRenderTarget, NULL);
+
+    D3D11_VIEWPORT viewport = {};
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = windowWidth;
+	viewport.Height = windowHeight;
+
+	g_pD3D11DeviceContext->RSSetViewports(1, &viewport);
+
+	g_pD3D11DeviceContext->VSSetShader(g_pVertexShader, 0, 0);
+	g_pD3D11DeviceContext->PSSetShader(g_pPixelShader, 0, 0);
+
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+	g_pD3D11DeviceContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
+	g_pD3D11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	g_pD3D11DeviceContext->IASetInputLayout(g_pInputLayout);
+	
 	MSG msg;
 	do
 	{
@@ -141,10 +167,17 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			DirectX::XMFLOAT4 clearColor(0.f, 0.2f, 0.4f, 0.f);
 			g_pD3D11DeviceContext->ClearRenderTargetView(g_pRenderTarget, (CONST FLOAT*)&clearColor);
 
+			g_pD3D11DeviceContext->Draw(3, 0);
+
 			g_pSwapChain->Present(0, 0);
 		}
 	} while (msg.message != WM_QUIT);
 
+
+	g_pVertexBuffer->Release();
+	g_pInputLayout->Release();
+	g_pVertexShader->Release();
+	g_pPixelShader->Release();
 	g_pRenderTarget->Release();
 	g_pSwapChain->Release();
 	g_pD3D11DeviceContext->Release();
