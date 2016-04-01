@@ -7,3 +7,6 @@ Tutorial 02 : Initializing Direct3D 11, creating a SwapChain and clearing the ba
 
 Tutorial 03 : Displaying a triangle.
 
+Tutorial 04 : Adding transparency.
+
+Tutorial 05 : Adding vertex color to the triangle.
