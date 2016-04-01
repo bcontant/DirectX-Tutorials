@@ -23,14 +23,20 @@ ID3D11InputLayout* g_pInputLayout = NULL;
 
 struct Vertex
 {
-	DirectX::XMFLOAT3 Pos;
+	DirectX::XMFLOAT3 Position;
+	DirectX::XMFLOAT4 Color;
 };
 
 Vertex triangle[] =
 {
-	DirectX::XMFLOAT3(0.0f, 0.5f, 0.0f),
-	DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f),
-	DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f),
+	DirectX::XMFLOAT3(0.f, 0.5f, 0.f),
+	DirectX::XMFLOAT4(1.f, 0.f, 0.f, 1.f),
+
+	DirectX::XMFLOAT3(0.5f, -0.5f, 0.f),
+	DirectX::XMFLOAT4(0.f, 1.f, 0.f, 1.f),
+
+	DirectX::XMFLOAT3(-0.5f, -0.5f, 0.f),
+	DirectX::XMFLOAT4(0.f, 0.f, 1.f, 1.f),
 };
 
 
@@ -141,10 +147,11 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	D3D11_INPUT_ELEMENT_DESC inputElementDescs[] =
 	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	hr = g_pD3D11Device->CreateInputLayout(inputElementDescs, 1, g_VertexShader, sizeof(g_VertexShader), &g_pInputLayout);
+	hr = g_pD3D11Device->CreateInputLayout(inputElementDescs, 2, g_VertexShader, sizeof(g_VertexShader), &g_pInputLayout);
 
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
