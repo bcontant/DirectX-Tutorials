@@ -13,6 +13,7 @@ ID3D11DeviceContext* g_pD3D11DeviceContext = NULL;
 
 IDXGISwapChain* g_pSwapChain = NULL;
 ID3D11RenderTargetView* g_pRenderTarget = NULL;
+ID3D11BlendState* g_pBlendState = NULL;
 
 ID3D11VertexShader* g_pVertexShader = NULL;
 ID3D11PixelShader* g_pPixelShader = NULL;
@@ -72,7 +73,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	HWND hwnd = CreateWindow(
 		L"DirectXTutorial", 
-		L"DirectX Tutorial 03", 
+		L"DirectX Tutorial 05", 
 		WS_OVERLAPPEDWINDOW, 
 		CW_USEDEFAULT, 
 		CW_USEDEFAULT, 
@@ -109,6 +110,17 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	hr = g_pD3D11Device->CreateRenderTargetView(pBackBuffer, NULL, &g_pRenderTarget);
 	pBackBuffer->Release();
 
+	D3D11_BLEND_DESC BlendState = {};
+	BlendState.RenderTarget[0].BlendEnable = TRUE;
+	BlendState.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	BlendState.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	BlendState.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	BlendState.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	BlendState.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	BlendState.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	BlendState.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	hr = g_pD3D11Device->CreateBlendState(&BlendState, &g_pBlendState);
+
 	hr = g_pD3D11Device->CreateVertexShader(g_VertexShader, sizeof(g_VertexShader), NULL, &g_pVertexShader);
 	hr = g_pD3D11Device->CreatePixelShader(g_PixelShader, sizeof(g_PixelShader), NULL, &g_pPixelShader);
 
@@ -134,7 +146,6 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	hr = g_pD3D11Device->CreateInputLayout(inputElementDescs, 1, g_VertexShader, sizeof(g_VertexShader), &g_pInputLayout);
 
-
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	g_pD3D11DeviceContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
@@ -153,6 +164,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	g_pD3D11DeviceContext->PSSetShader(g_pPixelShader, 0, 0);
 
 	g_pD3D11DeviceContext->OMSetRenderTargets(1, &g_pRenderTarget, NULL);
+	g_pD3D11DeviceContext->OMSetBlendState(g_pBlendState, NULL, 0xffffffff);
 	
 	MSG msg;
 	do
@@ -166,14 +178,12 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		{
 			DirectX::XMFLOAT4 clearColor(0.f, 0.2f, 0.4f, 0.f);
 			g_pD3D11DeviceContext->ClearRenderTargetView(g_pRenderTarget, (CONST FLOAT*)&clearColor);
-
 			g_pD3D11DeviceContext->Draw(3, 0);
-
 			g_pSwapChain->Present(0, 0);
 		}
 	} while (msg.message != WM_QUIT);
 
-
+	g_pBlendState->Release();
 	g_pVertexBuffer->Release();
 	g_pInputLayout->Release();
 	g_pVertexShader->Release();

@@ -10,6 +10,6 @@ struct PS_INPUT
 //--------------------------------------------------------------------------------------
 float4 main(PS_INPUT Input) : SV_TARGET
 {
-	float4 vDiffuse = float4(1.f, 0.f, 0.f, 1.f);
+	float4 vDiffuse = float4(1.f, 0.f, 0.f, 0.5f);
 	return vDiffuse;
 }

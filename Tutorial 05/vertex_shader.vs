@@ -1,15 +1,22 @@
 //--------------------------------------------------------------------------------------
 // Input / Output structures
 //--------------------------------------------------------------------------------------
-struct PS_INPUT
+struct VS_INPUT
 {
+	float4 vPosition    : POSITION;
+};
+
+struct VS_OUTPUT
+{
+	float4 vPosition    : SV_POSITION;
 };
 
 //--------------------------------------------------------------------------------------
-// Pixel Shader
+// Vertex Shader
 //--------------------------------------------------------------------------------------
-float4 main(PS_INPUT Input) : SV_TARGET
+VS_OUTPUT main(VS_INPUT Input)
 {
-	float4 vDiffuse = float4(1.f, 0.f, 0.f, 1.f);
-	return vDiffuse;
+	VS_OUTPUT Output;
+	Output.vPosition = Input.vPosition;
+	return Output;
 }
