@@ -2,13 +2,35 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 
+#include "vertex.h"
+#include "pixel.h"
+
 int windowWidth = 640;
 int windowHeight = 480;
 
 ID3D11Device* g_pD3D11Device = NULL;
 ID3D11DeviceContext* g_pD3D11DeviceContext = NULL;
+
 IDXGISwapChain* g_pSwapChain = NULL;
 ID3D11RenderTargetView* g_pRenderTarget = NULL;
+
+ID3D11VertexShader* g_pVertexShader = NULL;
+ID3D11PixelShader* g_pPixelShader = NULL;
+
+ID3D11Buffer* g_pVertexBuffer = NULL;
+
+struct Vertex
+{
+	DirectX::XMFLOAT3 Pos;
+};
+
+Vertex triangle[] =
+{
+	DirectX::XMFLOAT3(0.0f, 0.5f, 0.0f),
+	DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f),
+	DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f),
+};
+
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -49,7 +71,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	HWND hwnd = CreateWindow(
 		L"DirectXTutorial", 
-		L"DirectX Tutorial 02", 
+		L"DirectX Tutorial 03", 
 		WS_OVERLAPPEDWINDOW, 
 		CW_USEDEFAULT, 
 		CW_USEDEFAULT, 
@@ -87,6 +109,24 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	hr = g_pD3D11Device->CreateRenderTargetView(pBackBuffer, NULL, &g_pRenderTarget);
 	pBackBuffer->Release();
+
+	hr = g_pD3D11Device->CreateVertexShader(g_VertexShader, sizeof(g_VertexShader), NULL, &g_pVertexShader);
+	hr = g_pD3D11Device->CreatePixelShader(g_PixelShader, sizeof(g_PixelShader), NULL, &g_pPixelShader);
+
+	D3D11_BUFFER_DESC vertexBufferDesc;
+	vertexBufferDesc.ByteWidth = 3 * sizeof(Vertex);
+	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexBufferDesc.CPUAccessFlags = 0;
+	vertexBufferDesc.MiscFlags = 0;
+	vertexBufferDesc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA vertexBufferInitData;
+	vertexBufferInitData.pSysMem = triangle;
+	vertexBufferInitData.SysMemPitch = 0;
+	vertexBufferInitData.SysMemSlicePitch = 0;
+
+	hr = g_pD3D11Device->CreateBuffer(&vertexBufferDesc, &vertexBufferInitData, &g_pVertexBuffer);
 
 	MSG msg;
 	do
