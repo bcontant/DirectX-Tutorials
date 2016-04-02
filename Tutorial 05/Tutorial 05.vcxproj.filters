@@ -20,10 +20,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="pixel_shader.ps">
+    <None Include="vertex_shader.shader">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="vertex_shader.vs">
+    <None Include="pixel_shader.shader">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

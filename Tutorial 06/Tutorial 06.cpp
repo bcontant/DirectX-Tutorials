@@ -226,10 +226,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 			CB_WVP* dataPtr = (CB_WVP*)mappedResource.pData;
 			dataPtr->world = DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationY(angle) * (DirectX::XMMatrixTranslation(0.f, 0.f, 1.f)));
-			//dataPtr->view = DirectX::XMMatrixIdentity();
-			dataPtr->view = DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(0.f, 0.f, 0.f, 1.f), DirectX::XMVectorSet(0.f, 0.f, 1.f, 1.f), DirectX::XMVectorSet(0.f, 1.f, 0.f, 1.f));
-			dataPtr->proj = DirectX::XMMatrixOrthographicLH(2.f, 2.f, 0.f, 10.f);
-			//dataPtr->proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PI / 2.f, 480.f / 640.f, 0.1f, 1000.f));
+			dataPtr->view = DirectX::XMMatrixTranspose(DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(0.f, 0.f, -1.f, 0.f), DirectX::XMVectorSet(0.f, 0.f, 1.f, 0.f), DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f)));
+			//dataPtr->proj = DirectX::XMMatrixOrthographicLH(2.f, 2.f, 0.f, 10.f);
+			dataPtr->proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PI / 2.f, 480.f / 640.f, 0.1f, 1000.f));
 
 			g_pD3D11DeviceContext->Unmap(g_pWVPConstantBuffer, 0);
 
