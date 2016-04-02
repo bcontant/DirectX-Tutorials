@@ -10,3 +10,9 @@ Tutorial 03 : Displaying a triangle.
 Tutorial 04 : Adding transparency.
 
 Tutorial 05 : Adding vertex color to the triangle.
+
+Tutorial 06 : Adding Constant Buffers and transforms.
+
+Tutorial 07 : Handling window resizing
+
+Tutorial 08 : Quad + Index Buffers
