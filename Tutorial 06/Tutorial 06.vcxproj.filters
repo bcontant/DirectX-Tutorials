@@ -26,5 +26,6 @@
     <None Include="vertex_shader.shader">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="README.md" />
   </ItemGroup>
 </Project>

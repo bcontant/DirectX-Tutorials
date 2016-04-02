@@ -20,6 +20,7 @@ ID3D11VertexShader* g_pVertexShader = NULL;
 ID3D11PixelShader* g_pPixelShader = NULL;
 
 ID3D11Buffer* g_pVertexBuffer = NULL;
+ID3D11Buffer* g_pIndexBuffer = NULL;
 ID3D11Buffer* g_pWVPConstantBuffer = NULL;
 ID3D11InputLayout* g_pInputLayout = NULL;
 
@@ -29,16 +30,29 @@ struct Vertex
 	DirectX::XMFLOAT4 Color;
 };
 
-Vertex triangle[] =
+Vertex quad[] =
 {
-	DirectX::XMFLOAT3(0.f, 0.5f, 0.f),
+	//Top Left
+	DirectX::XMFLOAT3(-0.5f, 0.5f, 0.f),
 	DirectX::XMFLOAT4(1.f, 0.f, 0.f, 1.f),
 
-	DirectX::XMFLOAT3(0.5f, -0.5f, 0.f),
+	//Top Right
+	DirectX::XMFLOAT3(0.5f, 0.5f, 0.f),
 	DirectX::XMFLOAT4(0.f, 1.f, 0.f, 1.f),
 
+	//Bottom Left
 	DirectX::XMFLOAT3(-0.5f, -0.5f, 0.f),
 	DirectX::XMFLOAT4(0.f, 0.f, 1.f, 1.f),
+
+	//Bottom Right
+	DirectX::XMFLOAT3(0.5f, -0.5f, 0.f),
+	DirectX::XMFLOAT4(1.f, 0.f, 1.f, 1.f),
+};
+
+unsigned int indexBuffer[] =
+{
+	0, 1, 3,
+	0, 2, 3,
 };
 
 struct CB_WVP
@@ -55,6 +69,37 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	
 	switch (message)
 	{
+	case WM_SIZE:
+	{
+		windowWidth = LOWORD(lParam);
+		windowHeight = HIWORD(lParam);
+
+		if (g_pD3D11Device != NULL)
+		{
+			g_pRenderTarget->Release();
+			HRESULT hr = g_pSwapChain->ResizeBuffers(1, windowWidth, windowHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+
+			ID3D11Texture2D* pBackBuffer;
+			hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer);
+
+			hr = g_pD3D11Device->CreateRenderTargetView(pBackBuffer, NULL, &g_pRenderTarget);
+			pBackBuffer->Release();
+
+			g_pD3D11DeviceContext->OMSetRenderTargets(1, &g_pRenderTarget, NULL);
+
+			D3D11_VIEWPORT viewport = { };
+			viewport.TopLeftX = 0;
+			viewport.TopLeftY = 0;
+			viewport.Width = (FLOAT)windowWidth;
+			viewport.Height = (FLOAT)windowHeight;
+
+			g_pD3D11DeviceContext->RSSetViewports(1, &viewport);
+		}
+
+		result = 1;
+		handled = true;
+		break;
+	}
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		handled = TRUE;
@@ -87,7 +132,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	HWND hwnd = CreateWindow(
 		L"DirectXTutorial", 
-		L"DirectX Tutorial 06", 
+		L"DirectX Tutorial 08", 
 		WS_OVERLAPPEDWINDOW, 
 		CW_USEDEFAULT, 
 		CW_USEDEFAULT, 
@@ -143,8 +188,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	hr = g_pD3D11Device->CreateVertexShader(g_VertexShader, sizeof(g_VertexShader), NULL, &g_pVertexShader);
 	hr = g_pD3D11Device->CreatePixelShader(g_PixelShader, sizeof(g_PixelShader), NULL, &g_pPixelShader);
 
-	D3D11_BUFFER_DESC vertexBufferDesc;
-	vertexBufferDesc.ByteWidth = 3 * sizeof(Vertex);
+	D3D11_BUFFER_DESC vertexBufferDesc = {};
+	vertexBufferDesc.ByteWidth = 4 * sizeof(Vertex);
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
@@ -152,12 +197,24 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	vertexBufferDesc.StructureByteStride = 0;
 
 	D3D11_SUBRESOURCE_DATA vertexBufferInitData;
-	vertexBufferInitData.pSysMem = triangle;
+	vertexBufferInitData.pSysMem = quad;
 	vertexBufferInitData.SysMemPitch = 0;
 	vertexBufferInitData.SysMemSlicePitch = 0;
 
 	hr = g_pD3D11Device->CreateBuffer(&vertexBufferDesc, &vertexBufferInitData, &g_pVertexBuffer);
 
+	D3D11_BUFFER_DESC indexBufferDesc = {};
+	indexBufferDesc.ByteWidth = 6 * sizeof(unsigned int);
+	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+
+	D3D11_SUBRESOURCE_DATA indexBufferInitData;
+	indexBufferInitData.pSysMem = indexBuffer;
+	indexBufferInitData.SysMemPitch = 0;
+	indexBufferInitData.SysMemSlicePitch = 0;
+
+	hr = g_pD3D11Device->CreateBuffer(&indexBufferDesc, &indexBufferInitData, &g_pIndexBuffer);
+	
 	CB_WVP WVP;
 	WVP.world = DirectX::XMMatrixIdentity();
 	WVP.view = DirectX::XMMatrixIdentity();
@@ -190,6 +247,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	g_pD3D11DeviceContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
+	g_pD3D11DeviceContext->IASetIndexBuffer(g_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 	g_pD3D11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	g_pD3D11DeviceContext->IASetInputLayout(g_pInputLayout);
 
@@ -225,7 +283,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			hr = g_pD3D11DeviceContext->Map(g_pWVPConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 
 			CB_WVP* dataPtr = (CB_WVP*)mappedResource.pData;
-			dataPtr->world = DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationY(angle) * (DirectX::XMMatrixTranslation(0.f, 0.f, 1.f)));
+			dataPtr->world = DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationY(angle));
 			dataPtr->view = DirectX::XMMatrixTranspose(DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(0.f, 0.f, -1.f, 0.f), DirectX::XMVectorSet(0.f, 0.f, 1.f, 0.f), DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f)));
 			//dataPtr->proj = DirectX::XMMatrixOrthographicLH(2.f, 2.f, 0.f, 10.f);
 			dataPtr->proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PI / 2.f, float(windowWidth) / windowHeight, 0.1f, 1000.f));
@@ -234,16 +292,17 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 			DirectX::XMFLOAT4 clearColor(0.f, 0.2f, 0.4f, 0.f);
 			g_pD3D11DeviceContext->ClearRenderTargetView(g_pRenderTarget, (CONST FLOAT*)&clearColor);
-			g_pD3D11DeviceContext->Draw(3, 0);
+			g_pD3D11DeviceContext->DrawIndexed(6, 0, 0);
 			g_pSwapChain->Present(1, 0);
 
-			angle += 0.1f;
+			angle += DirectX::XM_2PI / 60.f;
 		}
 	} while (msg.message != WM_QUIT);
 
 	g_pRasterizerState->Release();
 	g_pBlendState->Release();
 	g_pWVPConstantBuffer->Release();
+	g_pIndexBuffer->Release();
 	g_pVertexBuffer->Release();
 	g_pInputLayout->Release();
 	g_pVertexShader->Release();

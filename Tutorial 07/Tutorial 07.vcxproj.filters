@@ -15,15 +15,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Tutorial 05.cpp">
+    <ClCompile Include="Tutorial 07.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="vertex_shader.shader">
+    <None Include="pixel_shader.shader">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="pixel_shader.shader">
+    <None Include="vertex_shader.shader">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="README.md" />

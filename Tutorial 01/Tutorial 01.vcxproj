@@ -21,6 +21,9 @@
   <ItemGroup>
     <ClCompile Include="Tutorial 01.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{999C9D49-E65C-4550-8522-6E94F8D49187}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

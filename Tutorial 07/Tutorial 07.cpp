@@ -55,6 +55,37 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	
 	switch (message)
 	{
+	case WM_SIZE:
+	{
+		windowWidth = LOWORD(lParam);
+		windowHeight = HIWORD(lParam);
+
+		if (g_pD3D11Device != NULL)
+		{
+			g_pRenderTarget->Release();
+			HRESULT hr = g_pSwapChain->ResizeBuffers(1, windowWidth, windowHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+
+			ID3D11Texture2D* pBackBuffer;
+			hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer);
+
+			hr = g_pD3D11Device->CreateRenderTargetView(pBackBuffer, NULL, &g_pRenderTarget);
+			pBackBuffer->Release();
+
+			g_pD3D11DeviceContext->OMSetRenderTargets(1, &g_pRenderTarget, NULL);
+
+			D3D11_VIEWPORT viewport = { };
+			viewport.TopLeftX = 0;
+			viewport.TopLeftY = 0;
+			viewport.Width = (FLOAT)windowWidth;
+			viewport.Height = (FLOAT)windowHeight;
+
+			g_pD3D11DeviceContext->RSSetViewports(1, &viewport);
+		}
+
+		result = 1;
+		handled = true;
+		break;
+	}
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		handled = TRUE;
@@ -87,7 +118,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	HWND hwnd = CreateWindow(
 		L"DirectXTutorial", 
-		L"DirectX Tutorial 06", 
+		L"DirectX Tutorial 07", 
 		WS_OVERLAPPEDWINDOW, 
 		CW_USEDEFAULT, 
 		CW_USEDEFAULT, 
@@ -225,7 +256,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			hr = g_pD3D11DeviceContext->Map(g_pWVPConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 
 			CB_WVP* dataPtr = (CB_WVP*)mappedResource.pData;
-			dataPtr->world = DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationY(angle) * (DirectX::XMMatrixTranslation(0.f, 0.f, 1.f)));
+			dataPtr->world = DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationY(angle));
 			dataPtr->view = DirectX::XMMatrixTranspose(DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(0.f, 0.f, -1.f, 0.f), DirectX::XMVectorSet(0.f, 0.f, 1.f, 0.f), DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f)));
 			//dataPtr->proj = DirectX::XMMatrixOrthographicLH(2.f, 2.f, 0.f, 10.f);
 			dataPtr->proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PI / 2.f, float(windowWidth) / windowHeight, 0.1f, 1000.f));
@@ -237,7 +268,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			g_pD3D11DeviceContext->Draw(3, 0);
 			g_pSwapChain->Present(1, 0);
 
-			angle += 0.1f;
+			angle += DirectX::XM_2PI / 60.f;
 		}
 	} while (msg.message != WM_QUIT);
 

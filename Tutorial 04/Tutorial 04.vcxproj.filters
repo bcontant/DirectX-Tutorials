@@ -20,11 +20,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="pixel_shader.shader">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="vertex_shader.shader">
-      <Filter>Resource Files</Filter>
-    </None>
+    <FxCompile Include="pixel_shader.shader" />
+    <FxCompile Include="vertex_shader.shader" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
   </ItemGroup>
 </Project>
