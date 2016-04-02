@@ -16,3 +16,5 @@ Tutorial 06 : Adding Constant Buffers and transforms.
 Tutorial 07 : Handling window resizing
 
 Tutorial 08 : Quad + Index Buffers
+
+Tutorial 09 : Texture mapping
